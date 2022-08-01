@@ -129,6 +129,21 @@ Adafruit_ILI9341::Adafruit_ILI9341(SPIClass *spiClass, int8_t dc, int8_t cs,
 
 /**************************************************************************/
 /*!
+    @brief  Instantiate Adafruit ILI9341 driver with hardware SPI using
+            a specific SPI peripheral (not necessarily default), and using
+	    the supplied callback functions to control the handshake lines.
+    @param  spiClass  Pointer to SPI peripheral (e.g. &SPI or &SPI1).
+    @param  set_dc    Pointer to a function that sets the Data/Command pin # (required).
+    @param  set_cs    Pointer to a function that sets the Chip select pin # (optional, pass NULL if unused and
+                      CS is tied to GND).
+    @param  rst       Pinter to a function that sets the Reset pin # (optional, pass NULL if unused).
+*/
+/**************************************************************************/
+Adafruit_ILI9341::Adafruit_ILI9341(void (*set_dc)(bool), void (*set_cs)(bool), void (*set_rst)(bool))
+    : Adafruit_SPITFT(ILI9341_TFTWIDTH, ILI9341_TFTHEIGHT, set_dc, set_cs, set_rst) {}
+
+/**************************************************************************/
+/*!
     @brief  Instantiate Adafruit ILI9341 driver using parallel interface.
     @param  busWidth  If tft16 (enumeration in Adafruit_SPITFT.h), is a
                       16-bit interface, else 8-bit.
@@ -190,7 +205,7 @@ void Adafruit_ILI9341::begin(uint32_t freq) {
     freq = SPI_DEFAULT_FREQ;
   initSPI(freq);
 
-  if (_rst < 0) {                 // If no hardware reset pin...
+  if ((_rst < 0) && (!_rstSetCallback)) {                 // If no hardware reset pin...
     sendCommand(ILI9341_SWRESET); // Engage software reset
     delay(150);
   }
